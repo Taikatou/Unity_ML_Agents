@@ -5,7 +5,7 @@ import datetime
 import time
 import tensorflow as tf
 from collections import deque
-from mlagents.envs import UnityEnvironment
+from mlagents.envs.environment import UnityEnvironment
 
 # 적대적인 DQN을 위한 파라미터 세팅
 state_size = 12 * 3
@@ -181,7 +181,7 @@ class DQNAgent():
 # Main 함수 -> 전체적으로 적대적인 DQN 알고리즘을 진행 
 if __name__ == '__main__':
     # 유니티 환경 설정
-    env = UnityEnvironment(file_name=env_name)
+    env = UnityEnvironment()
 
     # 유니티 브레인 설정 
     brain_name1 = env.brain_names[0]
