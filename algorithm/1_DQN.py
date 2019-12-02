@@ -5,7 +5,7 @@ import datetime
 import time
 import tensorflow as tf
 from collections import deque
-from mlagents.envs import UnityEnvironment
+from mlagents.envs.environment import UnityEnvironment
 
 # DQN을 위한 파라미터 값 세팅 
 state_size = [84, 84, 3]
