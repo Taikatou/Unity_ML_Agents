@@ -276,8 +276,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef84bcfa772426d48b57ffbf7591fc1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AgentA: {fileID: 1682694607}
-  AgentB: {fileID: 1668126776}
+  AgentA: {fileID: 0}
+  AgentB: {fileID: 0}
 --- !u!1 &282098637
 GameObject:
   m_ObjectHideFlags: 0
@@ -859,13 +859,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e733345980bf8e94f883523dfd4f8614, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  broadcastHub:
-    broadcastingBrains:
-    - {fileID: 11400000, guid: 4934cdd784e6ae14885387673708bae8, type: 2}
-    - {fileID: 11400000, guid: 726e5a1234b1cc940a57aa9742e1f0b1, type: 2}
-    m_BrainsToControl:
-    - {fileID: 11400000, guid: 4934cdd784e6ae14885387673708bae8, type: 2}
-    - {fileID: 11400000, guid: 726e5a1234b1cc940a57aa9742e1f0b1, type: 2}
   m_TrainingConfiguration:
     width: 80
     height: 80
@@ -907,8 +900,9 @@ GameObject:
   - component: {fileID: 1668126775}
   - component: {fileID: 1668126774}
   - component: {fileID: 1668126773}
-  - component: {fileID: 1668126776}
   - component: {fileID: 1668126772}
+  - component: {fileID: 1668126777}
+  - component: {fileID: 1668126776}
   m_Layer: 0
   m_Name: AgentB
   m_TagString: Untagged
@@ -1017,16 +1011,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60f2e0ff8a65502428b04f14d2809c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  brain: {fileID: 11400000, guid: 726e5a1234b1cc940a57aa9742e1f0b1, type: 2}
   agentParameters:
-    agentCameras: []
-    agentRenderTextures: []
     maxStep: 0
     resetOnDone: 1
     onDemandDecision: 0
     numberOfActionsBetweenDecisions: 1
   Ball: {fileID: 241374183}
   Opponent: {fileID: 1682694601}
+--- !u!114 &1668126777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668126770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    vectorObservationSize: 12
+    numStackedVectorObservations: 3
+    vectorActionSize: 03000000
+    vectorActionDescriptions: []
+    vectorActionSpaceType: 0
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_UseHeuristic: 0
+  m_BehaviorName: Pong
 --- !u!1 &1682694601
 GameObject:
   m_ObjectHideFlags: 0
@@ -1039,8 +1052,9 @@ GameObject:
   - component: {fileID: 1682694606}
   - component: {fileID: 1682694605}
   - component: {fileID: 1682694604}
-  - component: {fileID: 1682694607}
   - component: {fileID: 1682694603}
+  - component: {fileID: 1682694608}
+  - component: {fileID: 1682694607}
   m_Layer: 0
   m_Name: AgentA
   m_TagString: Untagged
@@ -1149,16 +1163,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60f2e0ff8a65502428b04f14d2809c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  brain: {fileID: 11400000, guid: 4934cdd784e6ae14885387673708bae8, type: 2}
   agentParameters:
-    agentCameras: []
-    agentRenderTextures: []
     maxStep: 0
     resetOnDone: 1
     onDemandDecision: 0
     numberOfActionsBetweenDecisions: 1
   Ball: {fileID: 241374183}
   Opponent: {fileID: 1668126770}
+--- !u!114 &1682694608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682694601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    vectorObservationSize: 12
+    numStackedVectorObservations: 3
+    vectorActionSize: 03000000
+    vectorActionDescriptions: []
+    vectorActionSpaceType: 0
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_UseHeuristic: 0
+  m_BehaviorName: Pong
 --- !u!1 &1715640920
 GameObject:
   m_ObjectHideFlags: 0

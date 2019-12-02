@@ -41,6 +41,7 @@ env_name = "../env/" + game + "/Windows/" + game
 save_path = "../saved_models/" + game + "/" + date_time + "_DQN"
 load_path = "../saved_models/" + game + "/20190220-16-27-5_DQN/model/model"
 
+
 # Model 클래스 -> 네트워크 정의 및 손실함수 설정, 네트워크 최적화 알고리즘 결정
 class Model():
     def __init__(self, model_name):
@@ -60,6 +61,7 @@ class Model():
         self.loss = tf.losses.mean_squared_error(self.target_Q, self.Q_Out)
         self.UpdateModel = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
         self.trainable_var = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, model_name)
+
 
 # DQNAgent 클래스 -> DQN 알고리즘을 위한 다양한 함수 
 class DQNAgent():
@@ -182,7 +184,7 @@ class DQNAgent():
 # Main 함수 -> 전체적으로 적대적인 DQN 알고리즘을 진행 
 if __name__ == '__main__':
     # 유니티 환경 설정
-    env = UnityEnvironment(file_name=env_name)
+    env = UnityEnvironment()
 
     # 유니티 브레인 설정 
     brain_name1 = env.brain_names[0]

@@ -4,7 +4,7 @@ import random
 import datetime
 import time
 import tensorflow as tf
-from mlagents.envs import UnityEnvironment
+from mlagents.envs.environment import UnityEnvironment
 from mlagents.trainers.demo_loader import demo_to_buffer
 
 # Behavioral Cloning 학습 및 시험 파라미터 값 세팅
@@ -12,7 +12,7 @@ state_size = 30 * 2
 action_size = 5
 
 load_model = False
-train_mode = True
+train_mode = False
 
 batch_size = 1024
 learning_rate = 0.001
@@ -125,6 +125,7 @@ class BCAgent():
         update_buffer = demo_buffer.update_buffer
         return update_buffer
 
+
 # Main 함수 -> 전체적으로 BC 알고리즘을 진행
 if __name__ == '__main__':
     # BCAgent 클래스를 agent로 정의
@@ -176,7 +177,7 @@ if __name__ == '__main__':
         agent.save_model()
 
     else:
-        env = UnityEnvironment(file_name=env_name)
+        env = UnityEnvironment()
         default_brain = env.brain_names[0]
         brain = env.brains[default_brain]
 

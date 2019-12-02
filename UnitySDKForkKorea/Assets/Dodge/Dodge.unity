@@ -94,8 +94,8 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaDirect: 0.5
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
-    m_ShowResolutionOverlay: 1
     m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -149,11 +149,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 204378223}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1cf16abc39fb4d6ca81222fc73d1bb5, type: 3}
+  m_Script: {fileID: 11500000, guid: 2aea885f7671e1f4a95ca41c8b590658, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recordKey: 114
-  resetKey: 99
+  agentParameters:
+    maxStep: 0
+    resetOnDone: 1
+    onDemandDecision: 0
+    numberOfActionsBetweenDecisions: 1
+  speed: 30
+--- !u!114 &204378226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 204378223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    vectorObservationSize: 30
+    numStackedVectorObservations: 2
+    vectorActionSize: 01000000
+    vectorActionDescriptions: []
+    vectorActionSpaceType: 0
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_UseHeuristic: 0
+  m_BehaviorName: Dodge
 --- !u!1 &762086410
 GameObject:
   m_ObjectHideFlags: 0
@@ -274,26 +300,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d005283ef119e454ca5fcbd53c7168c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  broadcastHub:
-    broadcastingBrains:
-    - {fileID: 11400000, guid: 066ae52f34a84bb4392d1afc421682dd, type: 2}
-    _brainsToControl:
-    - {fileID: 11400000, guid: 066ae52f34a84bb4392d1afc421682dd, type: 2}
-  maxSteps: 0
-  trainingConfiguration:
+  m_TrainingConfiguration:
     width: 80
     height: 80
     qualityLevel: 1
     timeScale: 100
     targetFrameRate: -1
-  inferenceConfiguration:
+  m_InferenceConfiguration:
     width: 1280
     height: 720
     qualityLevel: 5
     timeScale: 1
     targetFrameRate: 60
   resetParameters:
-    resetParameters:
+    m_ResetParameters:
     - key: ballSpeed
       value: 2
     - key: ballNum
@@ -477,6 +497,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -518,11 +539,27 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3577700506041334881, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
         type: 3}
-      propertyPath: m_Name
-      value: Env
+      propertyPath: brain
+      value: 
+      objectReference: {fileID: 11400000, guid: 066ae52f34a84bb4392d1afc421682dd,
+        type: 2}
+    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: agentParameters.onDemandDecision
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: speed
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3577700505522552653, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
     - target: {fileID: 3577700506041334880, guid: f10cfc656ce61c34db6a7d37d7574c9d,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -578,21 +615,35 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+    - target: {fileID: 3577700506041334881, guid: f10cfc656ce61c34db6a7d37d7574c9d,
         type: 3}
-      propertyPath: brain
+      propertyPath: m_Name
+      value: Env
+      objectReference: {fileID: 0}
+    - target: {fileID: 3577700506238643834, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 11400000, guid: 066ae52f34a84bb4392d1afc421682dd,
-        type: 2}
-    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
+    - target: {fileID: 3577700506689259127, guid: f10cfc656ce61c34db6a7d37d7574c9d,
         type: 3}
-      propertyPath: agentParameters.onDemandDecision
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3100047786841696435, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
+    - target: {fileID: 3577700506923203823, guid: f10cfc656ce61c34db6a7d37d7574c9d,
         type: 3}
-      propertyPath: speed
-      value: 20
-      objectReference: {fileID: 0}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
+    - target: {fileID: 3577700507471980104, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
+    - target: {fileID: 3577700507508618721, guid: f10cfc656ce61c34db6a7d37d7574c9d,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f10cfc656ce61c34db6a7d37d7574c9d, type: 3}
