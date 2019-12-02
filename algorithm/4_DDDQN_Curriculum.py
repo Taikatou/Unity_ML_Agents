@@ -5,7 +5,7 @@ import datetime
 import time
 import tensorflow as tf
 from collections import deque
-from mlagents.envs import UnityEnvironment
+from mlagents.envs.environment import UnityEnvironment
 
 # 파라미터 설정
 state_size = [84, 84, 3]
@@ -60,6 +60,7 @@ curriculum_config = {
     'min_lesson_length': 500,  # 각 게임 레벨 별 최소 수행 해야할 에피소드 수
 }
 
+
 # DDDQN 네트워크
 class DDDQN_Model():
     def __init__(self, model_name):
@@ -100,6 +101,7 @@ class DDDQN_Model():
         self.loss = tf.losses.mean_squared_error(self.target_Q, self.Q_Out)
         self.UpdateModel = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.loss)
         self.trainable_var = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, model_name)
+
 
 # DDDQN 에이전트
 class DDDQN_Agent():
@@ -214,6 +216,7 @@ class DDDQN_Agent():
         self.epsilon = start_epsilon
         self.epsilon_decay = epsilon_decay
         self.memory.clear()
+
 
 if __name__ == '__main__':
     # 환경 생성

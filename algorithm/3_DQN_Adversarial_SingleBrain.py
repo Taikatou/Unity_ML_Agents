@@ -5,7 +5,7 @@ import datetime
 import time
 import tensorflow as tf
 from collections import deque
-from mlagents.envs import UnityEnvironment
+from mlagents.envs.environment import UnityEnvironment
 
 # 적대적인 DQN을 위한 파라미터 세팅
 state_size = 12 * 3
@@ -34,7 +34,7 @@ epsilon_min = 0.1
 date_time = datetime.datetime.now().strftime("%Y%m%d-%H-%M-%S")
 
 # 유니티 환경 경로 
-game = "Pong_SingleBrain"
+game = "Pong"
 env_name = "../env/" + game + "/Windows/" + game
 
 # 모델 저장 및 불러오기 경로

@@ -178,10 +178,11 @@ class DQNAgent():
                                                  self.summary_loss2: loss2, 
                                                  self.summary_reward2: reward2}), episode)
 
+
 # Main 함수 -> 전체적으로 적대적인 DQN 알고리즘을 진행 
 if __name__ == '__main__':
     # 유니티 환경 설정
-    env = UnityEnvironment()
+    env = UnityEnvironment(file_name=env_name)
 
     # 유니티 브레인 설정 
     brain_name1 = env.brain_names[0]
