@@ -10,6 +10,10 @@
 **/Assets/AssetStoreTools*
 /saved_models/*
 
+**/models/
+
+**Recording_**.demo**
+
 # Visual Studio 2015 cache directory
 */.vs/
 
