@@ -184,7 +184,7 @@ class DQNAgent():
 # Main 함수 -> 전체적으로 적대적인 DQN 알고리즘을 진행 
 if __name__ == '__main__':
     # 유니티 환경 설정
-    env = UnityEnvironment()
+    env = UnityEnvironment(None)
 
     # 유니티 브레인 설정 
     brain_name1 = env.brain_names[0]

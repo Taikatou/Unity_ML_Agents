@@ -4,6 +4,7 @@ import yaml
 import mlagents.trainers.tests.mock_brain as mb
 import numpy as np
 from mlagents.trainers.rl_trainer import RLTrainer
+from mlagents.trainers.tests.test_buffer import construct_fake_buffer
 
 
 @pytest.fixture
@@ -42,6 +43,8 @@ def create_mock_all_brain_info(brain_info):
 def create_mock_policy():
     mock_policy = mock.Mock()
     mock_policy.reward_signals = {}
+    mock_policy.retrieve_memories.return_value = np.zeros((1, 1))
+    mock_policy.retrieve_previous_action.return_value = np.zeros((1, 1))
     return mock_policy
 
 
@@ -63,11 +66,7 @@ def test_rl_trainer(add_policy_outputs, add_rewards_outputs, num_vis_obs):
         num_vector_acts=2,
         num_vis_observations=num_vis_obs,
     )
-    trainer.add_experiences(
-        create_mock_all_brain_info(mock_braininfo),
-        create_mock_all_brain_info(mock_braininfo),
-        fake_action_outputs,
-    )
+    trainer.add_experiences(mock_braininfo, mock_braininfo, fake_action_outputs)
 
     # Remove one of the agents
     next_mock_braininfo = mb.create_mock_braininfo(
@@ -82,7 +81,6 @@ def test_rl_trainer(add_policy_outputs, add_rewards_outputs, num_vis_obs):
     assert len(brain_info.agents) == 1
     assert len(brain_info.visual_observations) == num_vis_obs
     assert len(brain_info.vector_observations) == 1
-    assert len(brain_info.previous_vector_actions) == 1
 
     # Test end episode
     trainer.end_episode()
@@ -92,3 +90,12 @@ def test_rl_trainer(add_policy_outputs, add_rewards_outputs, num_vis_obs):
     for rewards in trainer.collected_rewards.values():
         for agent_id in rewards:
             assert rewards[agent_id] == 0
+
+
+def test_clear_update_buffer():
+    trainer = create_rl_trainer()
+    trainer.training_buffer = construct_fake_buffer()
+    trainer.training_buffer.append_update_buffer(2, batch_size=None, training_length=2)
+    trainer.clear_update_buffer()
+    for _, arr in trainer.training_buffer.update_buffer.items():
+        assert len(arr) == 0
