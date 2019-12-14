@@ -230,7 +230,7 @@ if __name__ == '__main__':
 
             # 액션 결정 및 유니티 환경에 액션 적용 
             action1, action2 = agent.get_action(state1, state2)
-            env_info = env.step(vector_action = {brain_name1: [action1], brain_name2: [action2]})
+            env_info = env.step(vector_action={brain_name1: [action1], brain_name2: [action2]})
 
             # 첫번째 에이전트에 대한 다음 상태, 보상, 게임 종료 정보 취득 
             next_state1 = env_info[brain_name1].vector_observations[0]

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class Actor(nn.Module):
 
-    def __init__(self, state_size, action_size, fc1, fc2, seed):
+    def __init__(self, state_size, action_size, fc1, fc2):
         super(Actor, self).__init__()
 
         # network mapping state to action

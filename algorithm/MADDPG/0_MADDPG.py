@@ -8,7 +8,6 @@ from MADDPG.Agents.MADDPGAgent import Agent as MA
 
 import numpy as np
 
-
 #######################################################################################
 game = "Pong"
 env_name = "../../env/" + game + "/Windows/" + game
@@ -19,7 +18,6 @@ test_episode = 100
 train_mode = True
 
 scores = []
-
 
 ####################################################################################
 
@@ -34,7 +32,7 @@ brain = env.brains[brain_name]
 ####################################################################################
 
 # reset the environment
-env_info = env.reset(train_mode=True)[brain_name]
+env_info = env.reset(train_mode=True)
 
 # number of agents
 num_agents = len(env_info.agents)
@@ -50,10 +48,19 @@ state_size = states.shape[1]
 print('There are {} agents. Each observes a state with length: {}'.format(states.shape[0], state_size))
 print('The state for the first agent looks like:', states[0])
 
-
 agent = MA(state_size, action_size, num_agents, fc1=400, fc2=300, seed=0, update_times=10)
 
+
 ##############################################################################
+
+
+def get_action(brain_name):
+    # Get next status, reward, and end of game information for first agent
+    next_state = env_info[brain_name].vector_observations[0]
+    reward = env_info[brain_name].rewards[0]
+    done = env_info[brain_name].local_done[0]
+
+    return next_state, reward, done
 
 
 def solve_environment(n_episodes=6000):
@@ -66,36 +73,62 @@ def solve_environment(n_episodes=6000):
     """
     # list containing scores from each episode
     scores_window = deque(maxlen=100)  # last 100 scores
+
     global scores
+    global train_mode
+    global env_info
+
+    # 유니티 브레인 설정
+    brain_name1 = env.brain_names[0]
+    brain_name2 = env.brain_names[1]
+
+    brain1 = env.brains[brain_name1]
+    brain2 = env.brains[brain_name2]
+
+    step = 0
+
     for i_episode in range(run_episode + test_episode):
         if i_episode == run_episode:
             train_mode = False
 
+        # reset environment set learning mode
         env_info = env.reset(train_mode=train_mode)
-        agent.reset_random()  # reset noise object
-        state = env_info.vector_observations
 
-        score = 0
-        t = 0
+        done = False
+
+        agent.reset_random()  # reset noise object
+
+        # initialize state and rewards
+        state1 = env_info[brain_name1].vector_observations[0]
+        episode_rewards1 = 0
+
+        state2 = env_info[brain_name2].vector_observations[0]
+        episode_rewards2 = 0
+
         reward_this_episode_1 = 0
         reward_this_episode_2 = 0
-        while True:
-            t = t + 1
-            action = agent.act(state)
-            env_info = env.step(np.array(action))[brain_name]
-            next_state = env_info.vector_observations  # get the next state
-            reward = env_info.rewards  # get the reward
+        while not done:
+            step += 1
 
-            done = env_info.local_done
-            # print(state[0])
-            agent.step(state, action, reward, next_state, done)
-            state = next_state
-            # print(reward)
-            reward_this_episode_1 += reward[0]
-            reward_this_episode_2 += reward[1]
+            next_state1, reward1, done1 = get_action(brain1)
+            next_state2, reward2, done2 = get_action(brain2)
 
-            if np.any(done):
-                break
+            action1 = agent.act(state1)
+            action2 = agent.act(state2)
+
+            env_info = env.step(vector_action={brain_name1: [action1], brain2: [action2]})
+
+            # update episode rewards
+            episode_rewards1 += reward1
+            episode_rewards2 += reward2
+
+            state1 = next_state1
+            state2 = next_state2
+
+            reward_this_episode_1 += reward1
+            reward_this_episode_2 += reward2
+
+            done = done1 or done2
 
         score = max(reward_this_episode_1, reward_this_episode_2)
         scores_window.append(score)  # save most recent score
@@ -114,15 +147,4 @@ def solve_environment(n_episodes=6000):
     return
 
 
-if __name__ == '__main__':
-    env = UnityEnvironment()
-
-    solve_environment()
-
-    # plot the scores
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
-    # plt.plot(np.arange(len(scores)), scores)
-    # plt.ylabel('Score')
-    # plt.xlabel('Episode #')
-    # plt.show()
+solve_environment()
