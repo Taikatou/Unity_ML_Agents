@@ -1,24 +1,18 @@
 # 라이브러리 불러오기
 import numpy as np
 import datetime
-import time
 import tensorflow as tf
 import tensorflow.contrib as tc
 
 from mlagents.envs import UnityEnvironment
 
-class MADDPG:
-    def __init__(self, name, layer_norm=True, nb_actions=2, nb_input=16, nb_other_aciton=4):
-        gamma = 0.999
-        self.layer_norm = layer_norm
-        self.nb_actions = nb_actions
-        state_input = tf.placeholder(shape=[None, nb_input], dtype=tf.float32)
-        action_input = tf.placeholder(shape=[None, nb_actions], dtype=tf.float32)
-        other_action_input = tf.placeholder(shape=[None, nb_other_aciton], dtype=tf.float32)
-        reward = tf.placeholder(shape=[None, 1], dtype=tf.float32)
+from MADDPG.util.replay_buffer import ReplayBuffer
 
-        def actor_network(name):
-            with tf.variable_scope(name) as scope:
+
+class MADDPG:
+    def __init__(self, name, layer_norm=True, nb_actions=3, nb_input=36, nb_other_aciton=4):
+        def actor_network(actor_name):
+            with tf.variable_scope(actor_name) as scope:
                 x = state_input
                 x = tf.layers.dense(x, 64)
                 if self.layer_norm:
@@ -35,8 +29,8 @@ class MADDPG:
                 x = tf.nn.tanh(x)
             return x
 
-        def critic_network(name, action_input, reuse=False):
-            with tf.variable_scope(name) as scope:
+        def critic_network(critic_name, action_input, reuse=False):
+            with tf.variable_scope(critic_name) as scope:
                 if reuse:
                     scope.reuse_variables()
 
@@ -55,7 +49,19 @@ class MADDPG:
                 x = tf.layers.dense(x, 1, kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3))
             return x
 
+        self.layer_norm = layer_norm
+        self.nb_actions = nb_actions
+        state_input = tf.placeholder(shape=[None, nb_input], dtype=tf.float32)
+        action_input = tf.placeholder(shape=[None, nb_actions], dtype=tf.float32)
+        other_action_input = tf.placeholder(shape=[None, nb_other_aciton], dtype=tf.float32)
+        reward = tf.placeholder(shape=[None, 1], dtype=tf.float32)
+
         self.action_output = actor_network(name + '_actor')
+
+        print("#####################################################################################################")
+        print("##########                                   action                                     #############")
+        print("#####################################################################################################")
+        print(self.action_output)
         self.critic_output = critic_network(name + '_critic',
                                             action_input=tf.concat([action_input, other_action_input], axis=1))
         self.state_input = state_input
@@ -92,6 +98,18 @@ class MADDPG:
                   self.target_Q: target})
 
     def action(self, state, sess):
+        print("#####################################################################################################")
+        print("##########                                   STATE                                      #############")
+        print("#####################################################################################################")
+        print(state)
+        print("#####################################################################################################")
+        print("##########                                ACTION OUTPUT                                 #############")
+        print("#####################################################################################################")
+        print(self.action_output)
+        print("#####################################################################################################")
+        print("##########                               STATE INPUT                                    #############")
+        print("#####################################################################################################")
+        print(self.state_input)
         return sess.run(self.action_output, {self.state_input: state})
 
     def Q(self, state, action, other_action, sess):
@@ -99,10 +117,8 @@ class MADDPG:
                         {self.state_input: state, self.action_input: action, self.other_action_input: other_action})
 
 
-class MADDPGAgent:
-    def __init__(self):
-        self.agent = MADDPG()
-
+class MADDPGLearner:
+    def __init__(self, sess, name):
         def create_init_update(one_line_name, target_name, tau=0.99):
             online_var = [i for i in tf.trainable_variables() if one_line_name in i.name]
             target_var = [i for i in tf.trainable_variables() if target_name in i.name]
@@ -113,21 +129,54 @@ class MADDPGAgent:
 
             return target_init, target_update
 
+        self.agent = MADDPG(name + '_agent')
+        self.target = MADDPG(name + '_critic')
+
         self.agent_actor_target_init, self.agent_actor_target_update = create_init_update('agent1_actor',
                                                                                           'agent1_target_actor')
         self.agent_critic_target_init, self.agent_critic_target_update = create_init_update('agent1_critic',
                                                                                             'agent1_target_critic')
+        sess.run([self.agent_actor_target_init, self.agent_critic_target_init])
+
+        self.memory = ReplayBuffer(100000)
 
     def get_agent_action(self, o_n, sess, noise_rate=0):
-        action = self.agent.action(state=[o_n[0]], sess=sess) + np.random.randn(2) * noise_rate
+        print(o_n)
+        action = self.agent.action(state=o_n, sess=sess) + np.random.randn(2) * noise_rate
         return action
 
 
-class EnvironmentTest:
+def train_agent(learner, sess, other_actors):
+    total_obs_batch, total_act_batch, rew_batch, total_next_obs_batch, done_mask = learner.memory.sample(32)
+
+    act_batch = total_act_batch[:, 0, :]
+    other_act_batch = np.hstack([total_act_batch[:, 1, :], total_act_batch[:, 2, :]])
+
+    obs_batch = total_obs_batch[:, 0, :]
+
+    next_obs_batch = total_next_obs_batch[:, 0, :]
+    next_other_actor1_o = total_next_obs_batch[:, 1, :]
+
+    next_other_action = np.hstack([other_actors[0].action(next_other_actor1_o, sess)])
+    target = rew_batch.reshape(-1, 1) + 0.9999 * learner.target.Q(state=next_obs_batch,
+                                                                  action=learner.agent.action(next_obs_batch, sess),
+                                                                  other_action=next_other_action, sess=sess)
+    learner.agent.age.train_actor(state=obs_batch, other_action=other_act_batch, sess=sess)
+
+    learner.agent.train_critic(state=obs_batch,
+                               action=act_batch,
+                               other_action=other_act_batch,
+                               target=target,
+                               sess=sess)
+
+    sess.run([learner.agent_actor_target_update, learner.agent_critic_target_update])
+
+
+class EnvironmentTest():
     def __init__(self):
         # 유니티 환경 경로
         game = "Pong"
-        env_name = "../env/" + game + "/Windows/" + game
+        env_name = "../../env/" + game + "/Windows/" + game
 
         env = UnityEnvironment(file_name=env_name)
         self.env = env
@@ -146,8 +195,12 @@ class EnvironmentTest:
         epsilon_init = 1.0
         self.epsilon = epsilon_init
 
+        self.agent1 = MADDPGLearner(self.sess, 'agent_1')
+        self.agent2 = MADDPGLearner(self.sess, 'agent_2')
+
         self.Saver = tf.train.Saver()
-        self.Summary, self.Merge = self.Make_Summary()
+        self.train_mode = True
+        # self.Summary, self.Merge = self.Make_Summary()
 
     def run_simulation(self):
 
@@ -158,29 +211,19 @@ class EnvironmentTest:
 
         start_train_episode = 500
 
-        target_update_step = 10000
-        print_interval = 20
         save_interval = 5000
 
         #######################################################################################################
 
-        agent1 = MADDPGAgent()
-        agent2 = MADDPGAgent()
-
         step = 0
-
-        rewards1 = []
-        losses1 = []
-        rewards2 = []
-        losses2 = []
 
         # 게임 진행 반복문
         for episode in range(run_episode + test_episode):
             if episode == run_episode:
-                train_mode = False
+                self.train_mode = False
 
             # 유니티 환경 리셋 및 학습 모드 설정
-            env_info = self.env.reset(train_mode=train_mode)
+            env_info = self.env.reset(train_mode=self.train_mode)
 
             # 첫번째 에이전트의 상태, episode_rewards, done 초기화
             state1 = env_info[self.brain_name1].vector_observations[0]
@@ -197,8 +240,8 @@ class EnvironmentTest:
                 step += 1
 
                 # 액션 결정 및 유니티 환경에 액션 적용
-                action1 = agent1.get_agent_action(state1, state2)
-                action2 = agent2.get_agent_action(state1, state2)
+                action1 = self.agent1.get_agent_action(state1, self.sess)
+                action2 = self.agent2.get_agent_action(state2, self.sess)
                 
                 env_info = self.env.step(vector_action={
                     self.brain_name1: [action1],
@@ -218,35 +261,19 @@ class EnvironmentTest:
                 done2 = env_info[self.brain_name2].local_done[0]
 
                 # 학습 모드인 경우 리플레이 메모리에 데이터 저장
-                if train_mode:
-                    data1 = [state1, action1, reward1, next_state1, done1]
-                    data2 = [state2, action2, reward2, next_state2, done2]
+                if self.train_mode:
+                    self.agent1.agent_memory.add((np.vstack([state1, state2]),
+                                             np.vstack([action1, action2]),
+                                             reward1,
+                                             np.vstack([next_state1,
+                                                        next_state2],
+                                             False)))
 
-                    agent.append_sample(data1, data2)
-                else:
-                    time.sleep(0.02)
-                    agent.epsilon = 0.0
+                    if episode > start_train_episode:
+                        # 학습 수행
+                        train_agent(self.agent1, self.sess, [self.agent2])
 
-                # 상태 정보 업데이트
-                state1 = next_state1
-                state2 = next_state2
-
-                if episode > start_train_episode and train_mode:
-                    # 학습 수행
-                    loss1 = agent.train_model(agent.model1, agent.target_model1, agent.memory1, done)
-                    loss2 = agent.train_model(agent.model2, agent.target_model2, agent.memory2, done)
-                    losses1.append(loss1)
-                    losses2.append(loss2)
-
-                    # 타겟 네트워크 업데이트
-                    if step % (target_update_step) == 0:
-                        agent.update_target(agent.model1, agent.target_model1)
-                        agent.update_target(agent.model2, agent.target_model2)
-
-            rewards1.append(episode_rewards1)
-            rewards2.append(episode_rewards2)
-
-            # 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수값 기록
+            """"# 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수값 기록
             if episode % print_interval == 0 and episode != 0:
                 print("step: {} / episode: {} / epsilon: {:.3f}".format(step, episode, agent.epsilon))
                 print("reward1: {:.2f} / loss1: {:.4f} / reward2: {:.2f} / loss2: {:.4f}".format(
@@ -258,14 +285,17 @@ class EnvironmentTest:
                 rewards1 = []
                 losses1 = []
                 rewards2 = []
-                losses2 = []
+                losses2 = []"""
 
             # 네트워크 모델 저장
             if episode % save_interval == 0 and episode != 0:
-                agent.save_model()
+                game = "Pong"
+                date_time = datetime.datetime.now().strftime("%Y%m%d-%H-%M-%S")
+                save_path = "../saved_models/" + game + "/" + date_time + "_DQN"
+                self.Saver.save(self.sess, save_path + "/model/model")
                 print("Save Model {}".format(episode))
 
-        env.close()
+        self.env.close()
 
 
 # Main 함수 -> 전체적으로 적대적인 DQN 알고리즘을 진행
